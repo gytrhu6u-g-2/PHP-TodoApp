@@ -7,12 +7,28 @@
 
         $dbh = db_connect();
 
-        $sql = 'INSERT INTO tasks (name, done) VALUES (?, 0)';
+        $sql = 'INSERT INTO tasks_test (name, done) VALUES (?, 0)';
         $stmt = $dbh->prepare($sql);
         $stmt->bindValue(1, $name, PDO::PARAM_STR);
         $stmt->execute();
         $dbh = null;
         unset($name);
+    }
+
+    if(isset($_POST['method']) && ($_POST['method'] === 'put')){
+        $id = $_POST["id"];
+        $id = htmlspecialchars($id, ENT_QUOTES);
+        $id = (int)$id;
+
+        $dbh = db_connect();
+
+        $sql = 'UPDATE tasks_test SET done = 1 WHERE id = ?';
+        $stmt = $dbh->prepare($sql);
+
+        $stmt->bindValue(1, $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $dbh = null;
+
     }
 ?>
 
@@ -38,28 +54,29 @@
         </ul>
     </form>
     <ul>
-    <?php
-        $dbh = db_connect();
+        <?php
+            $dbh = db_connect();
 
-        $sql = 'SELECT id, name FROM tasks ORDER BY id DESC';
+            $sql = 'SELECT id, name FROM tasks_test WHERE done = 0 ORDER BY id DESC';
 
-        $stmt->execute();
-        $dbh = null;
+            $stmt = $dbh->prepare($sql);
+            $stmt->execute();
+            $dbh = null;
 
-        while($task = $stmt->fetch(PDO::FETCH_ASSOC)){
-            print '<li>';
-            print $task["name"];
-            print 
-            '
-            <form action="index.php" method="post">
-            <input type="hidden" name="method" value="put">
-            <input type="hidden" name="id" value="' . $task['id'] . '">
-            <button type="submit">済んだ</button>
-            </form>
-            ';
-            print '</li>';
-        }
-    ?>
+            while($task = $stmt->fetch(PDO::FETCH_ASSOC)){
+                print '<li>';
+                print $task["name"];
+                print 
+                '
+                <form action="index.php" method="post">
+                    <input type="hidden" name="method" value="put">
+                    <input type="hidden" name="id" value="' . $task['id'] . '">
+                    <button type="submit">済んだ</button>
+                </form>
+                ';
+                print '</li>';
+            }
+        ?>
     </ul>
 </body>
 </html>
